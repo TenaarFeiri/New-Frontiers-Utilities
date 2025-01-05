@@ -151,7 +151,7 @@ default
         llListen(4, "", llGetOwner(), "");
         llListen(3, "", llGetOwner(), "");
         llListen(22, "", llGetOwner(), "");
-        cHan = llListen(chan, "", NULL_KEY, "");
+        cHan = llListen(chan, "", llGetOwner(), "");
         hud_channel = Key2AppChan(llGetOwner(), 1337);
         llListen(hud_channel, "", "", "");
     }
@@ -172,124 +172,119 @@ default
     }
     listen(integer c, string n, key id, string m)
     {
-        if(llGetOwner() == id || (llGetOwnerKey(id) == llGetOwner() && llList2String(llGetObjectDetails(id, [OBJECT_DESC]), 0) == "rptool-hud"))
+        if(c == 4)
         {
-            if(c == 4)
+            if(m != "" && m != " ")
             {
-                if(m != "" && m != " ")
-                {
-                    funcDoSpeak(m); 
-                }
+                funcDoSpeak(m); 
             }
-            else if(c == 22)
+        }
+        else if(c == 22)
+        {
+            if(m == "" && m == " ") {
+                return;
+            }
+            string tmp = llGetObjectName();
+            string tmpNameOoc;
+            if(~llSubStringIndex(curName, "$n"))
             {
-                if(m == "" && m == " ") {
-                    return;
-                }
-                string tmp = llGetObjectName();
-                string tmpNameOoc;
-                if(~llSubStringIndex(curName, "$n"))
+                tmpNameOoc = llStringTrim(llDeleteSubString(curName, llSubStringIndex(curName, "$n"), (llSubStringIndex(curName, "$n") + 1)), STRING_TRIM);
+            }
+            else
+            {
+                tmpNameOoc = curName;
+            }
+            if(specialName)
+            {
+                llSetObjectName("");
+                m = llStringTrim(tmpNameOoc+" ("+llKey2Name(llGetOwner())+") OOC: " + m, STRING_TRIM);
+            }
+            else 
+            {
+                llSetObjectName(tmpNameOoc+" ("+llKey2Name(llGetOwner())+") OOC");
+            }
+            llSay(0, m);
+            llSetObjectName(tmp); 
+        }
+        else if(c == 3) 
+        {
+            if(m == "" && m == " ") {
+                return;
+            }
+            string tmp = llGetObjectName();
+            
+            if(llGetSubString(m, 0, 0) == "/" && (string)((integer)llGetSubString(m, 1, 1)) == llGetSubString(m, 1, 1))
+            {
+                m = llDeleteSubString(m, 0, 1);
+                m = llStringTrim(m, STRING_TRIM);
+            }
+            llSetObjectName("");
+
+                if(llGetSubString(m, 0, 0) == "#") 
+            {
+
+                    m = llDeleteSubString(m, 0, 0);
+                m = llStringTrim(m, STRING_TRIM);
+                llWhisper(0, "/me "+m);
+            }
+            else if(llGetSubString(m, 0, 0) == "!") 
+            {
+                llSetObjectName("");
+                m = llDeleteSubString(m, 0, 0);
+                m = llStringTrim(m, STRING_TRIM);
+                llShout(0, m);
+            }
+            else 
+            {
+                if(!whisper)
                 {
-                    tmpNameOoc = llStringTrim(llDeleteSubString(curName, llSubStringIndex(curName, "$n"), (llSubStringIndex(curName, "$n") + 1)), STRING_TRIM);
+                    llSay(0, "/me "+m);
                 }
                 else
                 {
-                    tmpNameOoc = curName;
-                }
-                if(specialName)
-                {
-                    llSetObjectName("");
-                    m = llStringTrim(tmpNameOoc+" ("+llKey2Name(llGetOwner())+") OOC: " + m, STRING_TRIM);
-                }
-                else 
-                {
-                    llSetObjectName(tmpNameOoc+" ("+llKey2Name(llGetOwner())+") OOC");
-                }
-                llSay(0, m);
-                llSetObjectName(tmp); 
-            }
-            else if(c == 3) 
-            {
-                if(m == "" && m == " ") {
-                    return;
-                }
-                string tmp = llGetObjectName();
-                
-                if(llGetSubString(m, 0, 0) == "/" && (string)((integer)llGetSubString(m, 1, 1)) == llGetSubString(m, 1, 1))
-                {
-                    m = llDeleteSubString(m, 0, 1);
-                    m = llStringTrim(m, STRING_TRIM);
-                }
-                llSetObjectName("");
-    
-                if(llGetSubString(m, 0, 0) == "#") 
-                {
-    
-                    m = llDeleteSubString(m, 0, 0);
-                    m = llStringTrim(m, STRING_TRIM);
                     llWhisper(0, "/me "+m);
                 }
-                else if(llGetSubString(m, 0, 0) == "!") 
-                {
-                    llSetObjectName("");
-                    m = llDeleteSubString(m, 0, 0);
-                    m = llStringTrim(m, STRING_TRIM);
-                    llShout(0, m);
-                }
-    
-                else 
-                {
-                    if(!whisper)
-                    {
-                        llSay(0, "/me "+m);
-                    }
-                    else
-                    {
-                        llWhisper(0, "/me "+m);
-                    }
-                }
-                llSetObjectName(tmp);
             }
-            else if((c == chan || c == hud_channel))
+            llSetObjectName(tmp);
+        }
+        else if((c == chan || c == hud_channel))
+        {
+            if(llToLower(m) == "togglename") 
             {
-                if(llToLower(m) == "togglename") 
+                if(togglename)
                 {
-                    if(togglename)
-                    {
-                        togglename = FALSE;
-                        llOwnerSay("Chatter now uses your characters' full names.");
-                    }
-                    else
-                    {
-                        togglename = TRUE;
-                        llOwnerSay("Chatter is now using only your characters' first names.");
-                    }
+                    togglename = FALSE;
+                    llOwnerSay("Chatter now uses your characters' full names.");
                 }
-                else if(llToLower(m) == "togglewhisper" || llToLower(m) == "chatrange")
+                else
                 {
-                    if(!whisper)
-                    {
-                        whisper = TRUE;
-                        llOwnerSay("/4 & /3 chatrange reduced to 10 meters.");
-                    }
-                    else
-                    {
-                        whisper = FALSE;
-                        llOwnerSay("/4 & /3 chatrange increased to 20 meters.");
-                    }
-    
+                    togglename = TRUE;
+                    llOwnerSay("Chatter is now using only your characters' first names.");
                 }
-                else if(llGetSubString(llToLower(m),0,3) == "name")
+            }
+            else if(llToLower(m) == "togglewhisper" || llToLower(m) == "chatrange")
+            {
+                if(!whisper)
                 {
-                    string tmp = llGetSubString(m, 4, -1);
-                    curName = llStringTrim(tmp, STRING_TRIM);
-                    specialName = chkPureASCII(stripTags(curName));
-                    llOwnerSay("Chatter name now set to: " + curName);
-                } else if(llGetSubString(llToLower(m),0,3) == "help") {
-                    llOwnerSay(instructions);
+                    whisper = TRUE;
+                    llOwnerSay("/4 & /3 chatrange reduced to 10 meters.");
                 }
+                else
+                {
+                    whisper = FALSE;
+                    llOwnerSay("/4 & /3 chatrange increased to 20 meters.");
+                }
+
+                }
+            else if(llGetSubString(llToLower(m),0,3) == "name")
+            {
+                string tmp = llGetSubString(m, 4, -1);
+                curName = llStringTrim(tmp, STRING_TRIM);
+                specialName = chkPureASCII(stripTags(curName));
+                llOwnerSay("Chatter name now set to: " + curName);
+            } else if(llGetSubString(llToLower(m),0,3) == "help") {
+                llOwnerSay(instructions);
             }
         }
-        
     }
 }
