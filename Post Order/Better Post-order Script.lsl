@@ -10,6 +10,7 @@
         Features:
         - Easily add players. CSV format, make sure to save it in a notecard. Wipe & re-add to change order.
         - Automatically keeps track of whose turn it is (chat object character names must match exactly, otherwise manual turn skip is required)
+        - Advances turn automatically when the correct person posts (if their character name matches).
         - Quick wipe of post order to create new one.
 */
 
