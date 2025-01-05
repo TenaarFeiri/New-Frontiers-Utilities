@@ -66,7 +66,7 @@ string funcName()
 }
 funcDoSpeak(string post) {
     if(llGetSubString(llStringTrim(llToLower(post), STRING_TRIM), 0, 2) == "/me") {
-        return;
+        post = llStringTrim(llDeleteSubString(post, 0, 2), STRING_TRIM); // Delete excess /me, we do not need it.
     }
     string savedName = llGetObjectName();
     // Remove extra backslashes and commands for duplicates.
