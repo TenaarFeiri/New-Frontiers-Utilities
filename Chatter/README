@@ -2,5 +2,6 @@ Just put this into any object your character wears, configure the name, check in
 Should be similar enough to NF's chatter it's just pick up and go.
 You DO NOT have to do /me in the chat to emote with this script, it handles all of that.
 
-This is meant as a replacement so operates on channel 4 with similar commands. Remember to change your NF HUD's rp channel away from channel 4 by using: @rpchannel -99
+This is meant as a replacement so operates on channel 4 with similar commands. 
+Remember to change your NF HUD's rp channel away from channel 4 by using: @rpchannel -99
 or whichever random channel.
