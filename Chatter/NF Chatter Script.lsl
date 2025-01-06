@@ -30,6 +30,7 @@ list allowedSpecials = ["-","'",".",",",":",";"];
 integer specialName; 
 integer togglename;
 integer whisper;
+integer postMode;
 integer chan = 1;
 integer cHan;
 integer hud_channel;
@@ -77,29 +78,31 @@ funcDoSpeak(string post) {
     list markers = ["!","#",":"];
     string marker;
     // Let's get the name in order, sort out apostrophes.
-    if(llListFindList(markers, [llGetSubString(post, 0, 0)]) != -1) {
-        marker = llGetSubString(post, 0, 0);
-        if(llToLower(llGetSubString(post, 1, 2)) == "'s") {
-            if(llGetSubString(llToLower(postName), -1, -1) == "s") {
-                post = llDeleteSubString(post, 1, 2);
-                postName = llStringTrim(postName + "'", STRING_TRIM);
-            } else {
-                post = llDeleteSubString(post, 1, 2);
-                postName = llStringTrim(postName + "'s", STRING_TRIM);
+    if(!postMode) { // Attempted fix for shout multiposting. This is cleared via timer, and if postMode is not FALSE, we don't wanna delete anything.
+        if(llListFindList(markers, [llGetSubString(post, 0, 0)]) != -1) {
+            marker = llGetSubString(post, 0, 0);
+            if(llToLower(llGetSubString(post, 1, 2)) == "'s") {
+                if(llGetSubString(llToLower(postName), -1, -1) == "s") {
+                    post = llDeleteSubString(post, 1, 2);
+                    postName = llStringTrim(postName + "'", STRING_TRIM);
+                } else {
+                    post = llDeleteSubString(post, 1, 2);
+                    postName = llStringTrim(postName + "'s", STRING_TRIM);
+                }
             }
-        }
-        post = llStringTrim(llDeleteSubString(post, 0, 0), STRING_TRIM);
-    } else {
-        if(llToLower(llGetSubString(post, 0, 1)) == "'s") {
-            if(llGetSubString(llToLower(postName), -1, -1) == "s") {
-                post = llDeleteSubString(post, 0, 1);
-                postName = postName + "'";
-            } else {
-                post = llDeleteSubString(post, 0, 1);
-                postName = postName + "'s";
+            post = llStringTrim(llDeleteSubString(post, 0, 0), STRING_TRIM);
+        } else {
+            if(llToLower(llGetSubString(post, 0, 1)) == "'s") {
+                if(llGetSubString(llToLower(postName), -1, -1) == "s") {
+                    post = llDeleteSubString(post, 0, 1);
+                    postName = postName + "'";
+                } else {
+                    post = llDeleteSubString(post, 0, 1);
+                    postName = postName + "'s";
+                }
             }
+            post = llStringTrim(post, STRING_TRIM);
         }
-        post = llStringTrim(post, STRING_TRIM);
     }
     if(llGetSubString(post, 0, 0) == ",") {
         postName = postName + ",";
@@ -112,22 +115,30 @@ funcDoSpeak(string post) {
     } else {
         llSetObjectName(postName);
     }
-    if(marker == "!") {
+    if(marker == "!" || postMode == 1) {
+        if(!postMode) { // Attempted fix for failure to multipost in shout.
+            postMode = 1;
+            llSetTimerEvent(1.5);
+        }
         if(!devMode) {
             llShout(0, me + post);
         } else {
             llOwnerSay("DEV MODE");
             llSay(0, me + post);
         }
-    } else if(marker == "#") {
+    } else if(marker == "#" || postMode == 2) {
+        if(!postMode) { // Attempted fix for failure to multipost in shout.
+            postMode = 2;
+            llSetTimerEvent(1.5);
+        }
         llWhisper(0, me + "whispers, \"" + post + "\"");
-    } else if(marker == ":") {
+    } else if(marker == ":" && postMode == 0) {
         if(!whisper) {
             llSay(0, me + "says, \"" + post + "\"");
         } else {
             llWhisper(0, me + "says, \"" + post + "\"");
         }
-    } else {
+    } else if(postMode == 0) {
         llSay(0, me + post);
     }
     llSetObjectName(savedName); // Finished.
@@ -154,6 +165,10 @@ default
         cHan = llListen(chan, "", llGetOwner(), "");
         hud_channel = Key2AppChan(llGetOwner(), 1337);
         llListen(hud_channel, "", "", "");
+    }
+    timer() {
+        llSetTimerEvent(0);
+        postMode = FALSE;
     }
     on_rez(integer start_param)
     {
