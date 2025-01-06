@@ -33,7 +33,6 @@ integer whisper;
 integer postMode;
 integer chan = 1;
 integer cHan;
-integer hud_channel;
 string stripTags(string data)
 {
     while(~llSubStringIndex(data, "$"))
@@ -163,8 +162,6 @@ default
         llListen(3, "", llGetOwner(), "");
         llListen(22, "", llGetOwner(), "");
         cHan = llListen(chan, "", llGetOwner(), "");
-        hud_channel = Key2AppChan(llGetOwner(), 1337);
-        llListen(hud_channel, "", "", "");
     }
     timer() {
         llSetTimerEvent(0);
@@ -262,7 +259,7 @@ default
             }
             llSetObjectName(tmp);
         }
-        else if((c == chan || c == hud_channel))
+        else if(c == chan)
         {
             if(llToLower(m) == "togglename") 
             {
