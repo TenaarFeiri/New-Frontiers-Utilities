@@ -123,7 +123,11 @@ funcDoSpeak(string post) {
             llShout(0, me + post);
         } else {
             llOwnerSay("DEV MODE");
-            llSay(0, me + post);
+            if(!whisper) {
+                llSay(0, me + post);
+            } else {
+                llWhisper(0, me + post);
+            }
         }
     } else if(marker == "#" || postMode == 2) {
         if(!postMode) { // Attempted fix for failure to multipost in shout.
@@ -138,7 +142,11 @@ funcDoSpeak(string post) {
             llWhisper(0, me + "says, \"" + post + "\"");
         }
     } else if(postMode == 0) {
-        llSay(0, me + post);
+        if(!whisper) {
+            llSay(0, me + post);
+        } else {
+            llWhisper(0, me + post);
+        }
     }
     llSetObjectName(savedName); // Finished.
 }
